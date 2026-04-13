@@ -1,4 +1,4 @@
-import { Transaction, UserProfile } from './types';
+import { Transaction, UserProfile } from '../types';
 
 const STORAGE_KEY = 'spendsense_data';
 const PROFILE_KEY = 'spendsense_profile';

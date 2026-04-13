@@ -4,7 +4,7 @@
  */
 
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, 
@@ -33,15 +33,29 @@ import { Transaction, CATEGORIES, PAYMENT_METHODS, TransactionType } from './typ
 
 // --- Components ---
 
-const Header = ({ title, showBack, onBack, rightElement }: { title: string, showBack?: boolean, onBack?: () => void, rightElement?: React.ReactNode }) => (
-  <header className="bg-blue-600 text-white p-4 flex items-center justify-between sticky top-0 z-20">
+const StatusBar = () => (
+  <div className="h-6 bg-blue-600 text-white flex justify-between items-center px-4 text-[10px] font-medium">
+    <span>9:41</span>
+    <div className="flex items-center gap-1">
+      <div className="w-3 h-3 rounded-full border border-white/50 flex items-center justify-center">
+        <div className="w-1 h-1 bg-white rounded-full" />
+      </div>
+      <div className="w-4 h-2 bg-white/30 rounded-sm relative overflow-hidden">
+        <div className="absolute inset-y-0 left-0 bg-white w-3/4" />
+      </div>
+    </div>
+  </div>
+);
+
+const Header = ({ title, showBack, onBack, rightElement, colorClass = "bg-blue-600" }: { title: string, showBack?: boolean, onBack?: () => void, rightElement?: React.ReactNode, colorClass?: string }) => (
+  <header className={cn(colorClass, "text-white p-4 flex items-center justify-between sticky top-0 z-20 shadow-sm")}>
     <div className="flex items-center gap-3">
       {showBack && (
-        <button onClick={onBack} className="p-1 hover:bg-blue-700 rounded-full transition-colors">
+        <button onClick={onBack} className="p-1 hover:bg-black/10 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
       )}
-      <h1 className="text-xl font-semibold">{title}</h1>
+      <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
     </div>
     <div className="flex items-center gap-2">
       {rightElement}
@@ -231,15 +245,13 @@ const TransactionForm = ({ type, onSave, onBack }: { type: TransactionType, onSa
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className={cn(
-        "text-white p-4 flex items-center gap-3 sticky top-0 z-20",
-        isExpense ? "bg-red-500" : "bg-green-600"
-      )}>
-        <button onClick={onBack} className="p-1 hover:bg-black/10 rounded-full transition-colors">
-          <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-xl font-semibold">Add {isExpense ? 'Expense' : 'Income'}</h1>
-      </header>
+      <StatusBar />
+      <Header 
+        title={`Add ${isExpense ? 'Expense' : 'Income'}`}
+        showBack
+        onBack={onBack}
+        colorClass={isExpense ? "bg-red-500" : "bg-green-600"}
+      />
 
       <main className="p-4">
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -460,37 +472,49 @@ export default function App() {
       </AnimatePresence>
       
       {!showSplash && (
-        <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl relative">
-          <Routes>
-            <Route path="/" element={
-              <Dashboard 
-                transactions={transactions} 
-                onNavigate={(path) => window.location.href = path} 
-                onDelete={handleDeleteTransaction}
-              />
-            } />
-            <Route path="/add-income" element={
-              <TransactionForm 
-                type="income" 
-                onSave={handleSaveTransaction} 
-                onBack={() => window.history.back()} 
-              />
-            } />
-            <Route path="/add-expense" element={
-              <TransactionForm 
-                type="expense" 
-                onSave={handleSaveTransaction} 
-                onBack={() => window.history.back()} 
-              />
-            } />
-            <Route path="/analytics" element={
-              <Analytics 
-                transactions={transactions} 
-                onBack={() => window.history.back()} 
-              />
-            } />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-0 sm:p-4">
+          <div className="w-full max-w-md bg-white min-h-screen sm:min-h-[812px] sm:h-[812px] shadow-2xl relative overflow-hidden sm:rounded-[3rem] sm:border-[8px] border-gray-900 flex flex-col">
+            <div className="flex-1 overflow-y-auto no-scrollbar">
+              <Routes>
+                <Route path="/" element={
+                  <>
+                    <StatusBar />
+                    <Dashboard 
+                      transactions={transactions} 
+                      onNavigate={(path) => window.location.href = path} 
+                      onDelete={handleDeleteTransaction}
+                    />
+                  </>
+                } />
+                <Route path="/add-income" element={
+                  <TransactionForm 
+                    type="income" 
+                    onSave={handleSaveTransaction} 
+                    onBack={() => window.history.back()} 
+                  />
+                } />
+                <Route path="/add-expense" element={
+                  <TransactionForm 
+                    type="expense" 
+                    onSave={handleSaveTransaction} 
+                    onBack={() => window.history.back()} 
+                  />
+                } />
+                <Route path="/analytics" element={
+                  <>
+                    <StatusBar />
+                    <Analytics 
+                      transactions={transactions} 
+                      onBack={() => window.history.back()} 
+                    />
+                  </>
+                } />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </div>
+            {/* Home Indicator for simulated mobile view */}
+            <div className="hidden sm:block h-1 w-32 bg-gray-900/20 rounded-full mx-auto mb-2 shrink-0" />
+          </div>
         </div>
       )}
     </Router>
